@@ -1,5 +1,24 @@
 # Validation record
 
+## Synthetic Codespaces notebook
+
+`notebooks/00_synthetic_model_test.ipynb` was schema-validated and all nine code
+cells were executed sequentially through IPython with Python 3.12 and LightGBM
+4.7.0. This includes the dependency check and the full unit suite: **42 passed
+in 4.74 seconds**. The fixed simulation has 8,000 views, 4,000 users, 14% zero
+revenue, and held-out user groups. Mean effect errors were about EUR 0.02 and
+EUR 0.74 for the two segments; both signs were correct. The held-out learned
+policy gain was EUR 1.44/view versus conditional-mean truth EUR 1.93/view, with
+a clustered 95% interval [0.73, 2.14]. The serialized encoder/model artifact was
+0.264 MiB; this is not a peak-RAM measurement. Recovery thresholds are smoke
+test tolerances for this fixed simple DGP, not confidence statements.
+
+The source notebook is saved without outputs and generates its data when run.
+The committed Codespaces container configuration was JSON-validated; a live
+GitHub Codespaces container was not provisioned in this validation. The local
+runtime disallowed Jupyter kernel TCP sockets, so code cells were run in one
+IPython session rather than claiming an end-to-end Codespaces/kernel test.
+
 ## Tweedie log link extension
 
 The full suite now contains **42 passing tests**. New tests cover original-unit
@@ -10,10 +29,11 @@ pipeline, signed final contrasts, and ratio-of-means percentage reporting.
 The original 34 checks remain. These tests do not establish production
 accuracy, calibration, interval coverage or outlier robustness.
 
-All four notebooks under `notebooks/` were schema-validated and their ordinary
+The four earlier notebooks under `notebooks/` were schema-validated and their ordinary
 Python code cells compiled. The current Tweedie notebook was also executed
 against a controlled validation fixture with its installation cell skipped;
-delivered notebooks contain no fabricated data or stored test outputs.
+those earlier notebooks contain no fabricated application data or stored test outputs.
+The separate synthetic test notebook intentionally generates synthetic data.
 
 ## Recommendation extension
 

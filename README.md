@@ -1,5 +1,13 @@
 # DML_CausalCustom
 
+## First test in Codespaces
+
+Start with [notebooks/00_synthetic_model_test.ipynb](notebooks/00_synthetic_model_test.ipynb)
+for a runnable synthetic-data test with known causal effects. Use **Code → Codespaces →
+Create codespace on main**, wait for automatic setup, open the notebook, choose the
+Python kernel and **Run All**. You do not need your work data or a manual clone.
+See [CODESPACES.md](CODESPACES.md) for setup, expected checks and how to stop/resume.
+
 ## Tweedie revenue workflow and notebooks
 
 Start with [notebooks/01_tweedie_revenue_pipeline.ipynb](notebooks/01_tweedie_revenue_pipeline.ipynb).
