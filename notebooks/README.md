@@ -1,5 +1,11 @@
 # Notebook examples
 
+For a first run without work data, open `00_synthetic_model_test.ipynb`.
+It generates compound Poisson–Gamma revenue, fits the lightweight Tweedie DR
+model, checks known effects and held-out policy values, tests serialization, and
+runs the repository unit suite. Open the repository in Codespaces, select this
+notebook and the Python kernel, then Run All. See [CODESPACES.md](../CODESPACES.md).
+
 Start with `01_tweedie_revenue_pipeline.ipynb` for the current revenue workflow.
 It covers real-data loading and column mapping, original euro versus cent units,
 discount units, optional calendar features, pretreatment X/W, group splitting,
