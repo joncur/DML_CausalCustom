@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+outputs/
+*.joblib
+*.csv
+*.parquet
+*.f32
+*.egg-info/
+build/
+dist/
