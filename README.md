@@ -1,5 +1,17 @@
 # DML_CausalCustom
 
+## Equation display and revenue units
+
+Equations are now embedded vector images so they remain readable in Markdown
+viewers that do not run GitHub's MathJax. Display equations retain expandable
+LaTeX source. `equations/source.json` and `render_equations.cjs` preserve the
+editable rendering inputs; no extra package is needed to read the files.
+
+Keep the log1p measurement view if it is useful for your skewed revenue data.
+For a complementary euro/percentage view, see
+[Revenue reporting](REVENUE_REPORTING.md), including a supported Tweedie
+log-link nuisance configuration and the distinction from log-label regression.
+
 ## Research informed recommendation extension
 
 The current version adds `LightweightDRLearner` in the same standalone module,
@@ -53,23 +65,37 @@ module: [`causal_dml.py`](causal_dml.py). The lead/discount workflow is separate
 
 The full derivation, gradients, Hessian, leaf updates, coordinate algorithm,
 assumptions, and memory analysis are in **[MATH.md](MATH.md)**. GitHub renders
-the Markdown and LaTeX equations directly.
+the Markdown, and the embedded equation images do not require a math engine.
 
 ## What changes in the final stage?
 
 After cross-fitting the outcome and treatment nuisance models, define
 
-$$
+![Equation 1](equations/eq-001.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widetilde Y_i=Y_i-\widehat m^{(-k(i))}(X_i,W_i),\qquad
 R_i=\phi(T_i)-\widehat e^{(-k(i))}(X_i,W_i).
-$$
+```
+
+</details>
 
 The final stage minimizes the **joint** residual loss
 
-$$
+![Equation 2](equations/eq-002.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \frac{1}{2n}\sum_{i=1}^{n}
 \left(\widetilde Y_i-R_i^\top\theta(X_i)\right)^2.
-$$
+```
+
+</details>
 
 For one coordinate, LightGBM receives the exact gradient and curvature of this
 loss. No division by a nearly zero treatment residual is needed. For several

@@ -24,27 +24,48 @@ contradict the requirement for coupled coordinate fitting of the R-loss.
 
 For action a, define conditional outcome and propensity models
 
-$$
+![Equation 63](equations/eq-063.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \mu_a(Z)=E[Y\mid T=a,Z],\qquad p_a(Z)=P(T=a\mid Z),\quad Z=(X,W).
-$$
+```
+
+</details>
 
 With nuisance estimates from folds excluding row i,
 
-$$
+![Equation 64](equations/eq-064.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \Gamma_{ia}=\widehat\mu_a^{(-k(i))}(Z_i)
 +\frac{\mathbf1\{T_i=a\}}{\widehat p_a^{(-k(i))}(Z_i)}
 \left[Y_i-\widehat\mu_a^{(-k(i))}(Z_i)\right].
-$$
+```
 
-The final target is $D_{ia}=\Gamma_{ia}-\Gamma_{i0}$, and
+</details>
 
-$$
+The final target is ![D_{ia}=\Gamma_{ia}-\Gamma_{i0}](equations/eq-068.svg), and
+
+![Equation 65](equations/eq-065.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat\tau_a=\arg\min_{f\in\mathcal F}
 \sum_i(D_{ia}-f(X_i))^2+\mathrm{tree\ regularization}.
-$$
+```
+
+</details>
 
 Without clipping, and under the causal identification assumptions, these scores
-identify $E[Y(a)-Y(0)\mid X]$ if the corresponding conditional outcome models
+identify ![E(Y(a)-Y(0)\mid X)](equations/eq-069.svg) if the corresponding conditional outcome models
 are correct **or** the propensity models are correct. They also require a
 capable final regression learner to estimate this conditional mean. Unlike the
 partially linear R specification, DR scores can average over treatment effect
@@ -101,11 +122,18 @@ own outcome/cost model; they are not deterministic per-impression costs.
 On an independent evaluation population, evaluate a fixed policy pi against
 a fixed baseline b using
 
-$$
+![Equation 66](equations/eq-066.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat\Delta_V=\frac1n\sum_i\left[
 \Gamma_{i,\pi(Z_i)}-\Gamma_{i,b(Z_i)}
 -c_{i,\pi(Z_i)}+c_{i,b(Z_i)}\right].
-$$
+```
+
+</details>
 
 This is a direct value comparison, not the mean of the largest fitted CATEs.
 Costs used for evaluation are actual known costs; the decision multiplier is
@@ -113,16 +141,23 @@ not subtracted as an economic expense. The default baseline is the first
 treatment category. The comparison is not against the stochastic historical
 logging policy. Unsupported-row and clipping fractions are reported for the
 full evaluation population, along with importance-weight effective sample size
-$\mathrm{ESS}=(\sum_i w_i)^2/\sum_i w_i^2$.
+![\mathrm{ESS}=(\sum_i w_i)^2/\sum_i w_i^2](equations/eq-070.svg).
 
-For centered evaluation scores $d_i=\psi_i-\bar\psi$ and G independent user
+For centered evaluation scores ![d_i=\psi_i-\bar\psi](equations/eq-071.svg) and G independent user
 clusters, the reported cluster sandwich standard error is
 
-$$
+![Equation 67](equations/eq-067.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat{\mathrm{SE}}=
 \frac1n\sqrt{\frac{G}{G-1}\sum_{g=1}^{G}
 \left(\sum_{i\in g}d_i\right)^2}.
-$$
+```
+
+</details>
 
 A Student t critical value with G−1 degrees of freedom gives an approximate
 Wald interval. It is conditional on the separately learned policy and

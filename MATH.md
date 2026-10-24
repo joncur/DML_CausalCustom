@@ -2,32 +2,46 @@
 
 ## 1. Estimand and assumptions
 
-Let $Y$ be one outcome, $T$ a treatment, $X$ effect-modifier features, and $W$
-additional pretreatment confounders. Define $Z=(X,W)$. Assume consistency,
-no interference where relevant, conditional exchangeability given $Z$, and
+Let ![Y](equations/eq-029.svg) be one outcome, ![T](equations/eq-030.svg) a treatment, ![X](equations/eq-031.svg) effect-modifier features, and ![W](equations/eq-032.svg)
+additional pretreatment confounders. Define ![Z=(X,W)](equations/eq-033.svg). Assume consistency,
+no interference where relevant, conditional exchangeability given ![Z](equations/eq-034.svg), and
 sufficient treatment overlap. These assumptions cannot be verified by a good
 residual score.
 
 For K categorical treatments, explicitly order labels as
-$[a_0,a_1,\ldots,a_{K-1}]$ and define the q=K−1 treatment basis
+![(a_0,a_1,\ldots,a_{K-1})](equations/eq-035.svg) and define the q=K−1 treatment basis
 
-$$
+![Equation 3](equations/eq-003.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \phi_j(T)=\mathbf{1}\{T=a_j\},\quad j=1,\ldots,q.
-$$
+```
+
+</details>
 
 The working conditional-mean model is
 
-$$
-E[Y\mid Z,T]=g(Z)+\phi(T)^\top\theta(X).
-$$
+![Equation 4](equations/eq-004.svg)
 
-Here $\theta_j(X)$ is the conditional mean contrast of $a_j$ versus $a_0$.
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
+E[Y\mid Z,T]=g(Z)+\phi(T)^\top\theta(X).
+```
+
+</details>
+
+Here ![\theta_j(X)](equations/eq-036.svg) is the conditional mean contrast of ![a_j](equations/eq-037.svg) versus ![a_0](equations/eq-038.svg).
 This restriction allows arbitrary baseline effects of W but assumes W does not
 modify treatment effects beyond X. If W does modify effects, the resulting
 coefficient is generally a treatment-covariance-weighted projection, not an
 unweighted CATE averaged over W. Move important effect modifiers into X.
 
-For scalar continuous treatment, $\phi(T)=T$, q=1. The model is linear in
+For scalar continuous treatment, ![\phi(T)=T](equations/eq-039.svg), q=1. The model is linear in
 treatment dose, while the slope can vary nonlinearly with X. The package does
 not claim arbitrary continuous dose-response identification.
 
@@ -35,18 +49,32 @@ not claim arbitrary continuous dose-response identification.
 
 Define nuisance functions
 
-$$
+![Equation 5](equations/eq-005.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 m(Z)=E[Y\mid Z],\qquad e(Z)=E[\phi(T)\mid Z].
-$$
+```
+
+</details>
 
 Split training rows into K folds (K here denotes the number of folds, distinct
 from the number of treatment labels above). For row i in fold k(i), fit both
 nuisances on the other folds and form
 
-$$
+![Equation 6](equations/eq-006.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widetilde Y_i=Y_i-\widehat m^{(-k(i))}(Z_i),\qquad
 R_i=\phi(T_i)-\widehat e^{(-k(i))}(Z_i).
-$$
+```
+
+</details>
 
 Categorical e is a vector of class probabilities excluding the reference;
 continuous e is a regression prediction. Probability columns are matched to
@@ -62,54 +90,89 @@ observed treatment and its residual are not final-stage input features.
 
 Under the working model, residualization yields
 
-$$
+![Equation 7](equations/eq-007.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widetilde Y=R^\top\theta_0(X)+\varepsilon,
 \qquad E[\varepsilon\mid Z,T]=0.
-$$
+```
+
+</details>
 
 The target final-stage objective is the R-loss
 
-$$
+![Equation 8](equations/eq-008.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 L(\theta)=\frac{1}{2n}\sum_i
 \left(\widetilde Y_i-R_i^\top\theta(X_i)\right)^2.
-$$
+```
+
+</details>
 
 Its conditional first-order moment is
 
-$$
+![Equation 9](equations/eq-009.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 E\left[R\{\widetilde Y-R^\top\theta(X)\}\mid X\right]=0.
-$$
+```
+
+</details>
 
 At the true nuisance functions, first-order derivatives of this moment with
-respect to perturbations of m or e vanish: terms involving $E[R\mid Z]$ and
-$E[\varepsilon\mid Z]$ are zero. This is Neyman orthogonality. Cross-fitting
+respect to perturbations of m or e vanish: terms involving ![E(R\mid Z)](equations/eq-040.svg) and
+![E(\varepsilon\mid Z)](equations/eq-041.svg) are zero. This is Neyman orthogonality. Cross-fitting
 limits reuse of each row's outcome in its own nuisance prediction. Orthogonality
 does not eliminate finite-sample bias, positivity failures, or final-stage
 overfitting, and by itself gives no valid confidence intervals for these trees.
 
 The treatment-residual information matrix is
 
-$$
+![Equation 10](equations/eq-010.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 G(x)=E[RR^\top\mid X=x].
-$$
+```
+
+</details>
 
 It must be sufficiently nonsingular for local identification. A global
-$\widehat G=n^{-1}\sum_i R_iR_i^\top$ eigenvalue diagnostic is implemented,
+![\widehat G=n^{-1}\sum_i R_iR_i^\top](equations/eq-042.svg) eigenvalue diagnostic is implemented,
 but can conceal weak identification in individual cohorts. The diagnostic
 threshold is `identification_tol * max(1, largest_eigenvalue)`.
 
 ## 4. Why a model substitution is not enough
 
-A generic regressor of $\widetilde Y$ on X estimates a residual outcome mean,
-not $\theta(X)$. Regressing on $[X,R]$ with an unrestricted tree model does not
+A generic regressor of ![\widetilde Y](equations/eq-043.svg) on X estimates a residual outcome mean,
+not ![\theta(X)](equations/eq-044.svg). Regressing on ![(X,R)](equations/eq-045.svg) with an unrestricted tree model does not
 enforce linearity in R or expose a coherent treatment-slope API.
 
 For one residual treatment r, the familiar weighted regression identity is
 
-$$
+![Equation 11](equations/eq-011.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 (\widetilde Y-r f(X))^2
 =r^2\left(\frac{\widetilde Y}{r}-f(X)\right)^2,\qquad r\ne0.
-$$
+```
+
+</details>
 
 This explains EconML NonParamDML's scalar/binary reweighting approach. The
 quotient is mathematically valid, but may be numerically extreme when r is
@@ -121,77 +184,133 @@ For multiple arms, independent scalar fits are generally invalid. For one
 categorical draw with probabilities p, the conditional covariance of the
 nonreference indicators is
 
-$$
+![Equation 12](equations/eq-012.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \operatorname{Cov}(\phi(T)\mid Z)
 =\operatorname{diag}(p)-pp^\top.
-$$
+```
 
-Its off-diagonal elements are $-p_jp_k$. Ignoring these terms mixes effects.
+</details>
+
+Its off-diagonal elements are ![-p_jp_k](equations/eq-046.svg). Ignoring these terms mixes effects.
 The implementation optimizes the joint loss with coupled coordinate updates.
 
 ## 5. Joint constant initialization
 
 Accumulate, in row blocks,
 
-$$
+![Equation 13](equations/eq-013.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat G=\frac1n R^\top R,\qquad
 \widehat b=\frac1n R^\top\widetilde Y.
-$$
+```
+
+</details>
 
 Initialize all coordinates jointly using
 
-$$
-\theta^{(0)}=(\widehat G+\lambda_0 I)^{-1}\widehat b.
-$$
+![Equation 14](equations/eq-014.svg)
 
-`ridge` is $\lambda_0$. It stabilizes this initial solve only; it is not the
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
+\theta^{(0)}=(\widehat G+\lambda_0 I)^{-1}\widehat b.
+```
+
+</details>
+
+`ridge` is ![\lambda_0](equations/eq-047.svg). It stabilizes this initial solve only; it is not the
 final-tree L2 penalty and does not create overlap. With X omitted this constant
 model is the final estimator. With X supplied, keep this vector as a baseline
 and learn coordinate corrections. Predictions are
 
-$$
-\widehat\theta_j(x)=\theta^{(0)}_j+f_j(x).
-$$
+![Equation 15](equations/eq-015.svg)
 
-Initially all $f_j=0$. If a coordinate's proposed tree replacement does not
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
+\widehat\theta_j(x)=\theta^{(0)}_j+f_j(x).
+```
+
+</details>
+
+Initially all ![f_j=0](equations/eq-048.svg). If a coordinate's proposed tree replacement does not
 reduce the full unpenalized training residual MSE, retain its old model.
 
 ## 6. Coupled coordinate backfitting
 
-Maintain $s_i=\sum_k R_{ik}\widehat\theta_k(X_i)$. For coordinate j, hold the
+Maintain ![s_i=\sum_k R_{ik}\widehat\theta_k(X_i)](equations/eq-049.svg). For coordinate j, hold the
 other coordinate functions fixed and remove their contribution:
 
-$$
+![Equation 16](equations/eq-016.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 u_{ij}=\widetilde Y_i-s_i+R_{ij}\widehat\theta_j(X_i).
-$$
+```
+
+</details>
 
 Since the new coordinate has the fixed baseline plus a learned correction,
 the tree-label array is
 
-$$
+![Equation 17](equations/eq-017.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 a_{ij}=u_{ij}-R_{ij}\theta^{(0)}_j.
-$$
+```
 
-Fit a new correction function $f_j$ to
+</details>
 
-$$
+Fit a new correction function ![f_j](equations/eq-050.svg) to
+
+![Equation 18](equations/eq-018.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \ell_{ij}(f_j)=\frac12\left(a_{ij}-R_{ij}f_j(X_i)\right)^2.
-$$
+```
+
+</details>
 
 This equals the joint loss with the other functions fixed, row for row. The
-exact derivatives with respect to the raw scalar prediction $f_{ij}$ are
+exact derivatives with respect to the raw scalar prediction ![f_{ij}](equations/eq-051.svg) are
 
-$$
+![Equation 19](equations/eq-019.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 g_{ij}=R_{ij}\left(R_{ij}f_{ij}-a_{ij}\right),\qquad
 h_{ij}=R_{ij}^2.
-$$
+```
+
+</details>
 
 `orthogonal_derivatives()` implements these expressions; finite differences
 test both. The gradient and Hessian are not generic outcome regression
 derivatives: they include residual treatment and its squared magnitude.
 
-The full per-row vector Hessian is $R_iR_i^\top$, including off-diagonal terms.
-LightGBM's scalar custom objective sees its coordinate curvature $R_{ij}^2$;
+The full per-row vector Hessian is ![R_iR_i^\top](equations/eq-052.svg), including off-diagonal terms.
+LightGBM's scalar custom objective sees its coordinate curvature ![R_{ij}^2](equations/eq-053.svg);
 the repeated partial-residual updates account for coupling across coordinates.
 This is approximate functional coordinate descent over bounded tree ensembles,
 not a simultaneous full-Hessian Newton solver and not a convergence theorem
@@ -199,10 +318,17 @@ for nonconvex tree search.
 
 After fitting, compute the new coordinate prediction and proposed joint fit
 
-$$
+![Equation 20](equations/eq-020.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 s_i^{\rm new}=s_i+R_{ij}
 \left(\widehat\theta_j^{\rm new}(X_i)-\widehat\theta_j(X_i)\right).
-$$
+```
+
+</details>
 
 Accept only if its full-data joint training MSE is finite and strictly lower.
 Stop after `backfit_rounds` sweeps or when a sweep's improvement is at most
@@ -219,19 +345,33 @@ regularization bias. The constant unregularized-limit identity is tested.
 ## 7. What happens inside a LightGBM leaf?
 
 For a leaf A, the local second-order approximation for an additive update v
-is $G_A v + \tfrac12(H_A+\lambda)v^2+\alpha|v|$, where
+is ![G_A v + \tfrac12(H_A+\lambda)v^2+\alpha|v|](equations/eq-054.svg), where
 
-$$
+![Equation 21](equations/eq-021.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 G_A=\sum_{i\in A}g_{ij},\qquad H_A=\sum_{i\in A}R_{ij}^2.
-$$
+```
+
+</details>
 
 The regularized Newton leaf value is
 
-$$
-v_A=-\frac{\operatorname{soft}(G_A,\alpha)}{H_A+\lambda}.
-$$
+![Equation 22](equations/eq-022.svg)
 
-LightGBM adds the shrunken leaf prediction $\eta v_A$. L2 adds stability when
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
+v_A=-\frac{\operatorname{soft}(G_A,\alpha)}{H_A+\lambda}.
+```
+
+</details>
+
+LightGBM adds the shrunken leaf prediction ![\eta v_A](equations/eq-055.svg). L2 adds stability when
 residual treatment information is small; L1 soft-thresholds the gradient sum.
 Minimum Hessian mass is thus a minimum residual-information requirement,
 different from a minimum number of rows. Split gains use analogous sums of
@@ -276,14 +416,21 @@ a common nuisance specification.
 
 For a held-out set H,
 
-$$
+![Equation 23](equations/eq-023.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat L_H=\frac1{|H|}\sum_{i\in H}
 \left(Y_i-\widehat m_{\rm train}(Z_i)
 -\{\phi(T_i)-\widehat e_{\rm train}(Z_i)\}^\top
 \widehat\theta(X_i)\right)^2.
-$$
+```
 
-Report $1-L_H/L_{H,\mathrm{constant}}$ against the training constant model.
+</details>
+
+Report ![1-L_H/L_{H,\mathrm{constant}}](equations/eq-056.svg) against the training constant model.
 Do not compare training OOF residual loss with held-out loss as though they
 used the same nuisance predictions. A negative held-out R-score indicates
 that learned heterogeneity did worse than the training constant on that set.
@@ -298,48 +445,83 @@ validated for the target estimand. Tree-seed dispersion is not a standard error.
 
 Categorical contrast:
 
-$$
+![Equation 24](equations/eq-024.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat\tau(x;a,b)=\widehat\theta_b(x)-\widehat\theta_a(x),
 \qquad \widehat\theta_{a_0}(x)=0.
-$$
+```
+
+</details>
 
 Continuous contrast:
 
-$$
+![Equation 25](equations/eq-025.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \widehat\tau(x;t_0,t_1)=\widehat\theta(x)(t_1-t_0).
-$$
+```
+
+</details>
 
 For a supplied population X, `ate` computes the empirical mean of these
 contrasts. It is not a separate debiased AIPW ATE estimator. `const_marginal_effect`
 always retains the q axis; `effect` returns a one-dimensional vector.
 
-Let $V=\log(1+Y)$ for nonnegative revenue Y. Then
+Let ![V=\log(1+Y)](equations/eq-057.svg) for nonnegative revenue Y. Then
 
-$$
+![Equation 26](equations/eq-026.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \Delta(x)=E[V(1)\mid X=x]-E[V(0)\mid X=x].
-$$
+```
 
-Define the shifted geometric mean $G_t(x)=\exp(E[V(t)\mid X=x])$. Therefore
+</details>
 
-$$
+Define the shifted geometric mean ![G_t(x)=\exp(E(V(t)\mid X=x))](equations/eq-058.svg). Therefore
+
+![Equation 27](equations/eq-027.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \frac{G_1(x)}{G_0(x)}-1=\exp(\Delta(x))-1.
-$$
+```
+
+</details>
 
 This is a ratio of geometric means of Y+1. In general
-$E[Y(t)\mid X]\ne\exp(E[V(t)\mid X])-1$. Consequently Δ alone cannot recover
+![E(Y(t)\mid X)\ne\exp(E(V(t)\mid X))-1](equations/eq-059.svg). Consequently Δ alone cannot recover
 arithmetic expected revenue or its percent lift. Also, exponentiating a mean
 Δ differs from averaging `expm1` of row effects. The pipeline uses
 `expm1(mean_effect)`, a geometric aggregation on the evaluation population.
 
 For exploratory lead mitigation on that scale, define mean log contrasts
-$\delta_L=\tau(\mathrm{lead},0\%)-\tau(0\mathrm{d},0\%)$ and
-$\delta_D=\tau(\mathrm{lead},d)-\tau(\mathrm{lead},0\%)$. If $\delta_L<0$,
+![\delta_L=\tau(\mathrm{lead},0\%)-\tau(0\mathrm{d},0\%)](equations/eq-060.svg) and
+![\delta_D=\tau(\mathrm{lead},d)-\tau(\mathrm{lead},0\%)](equations/eq-061.svg). If ![\delta_L<0](equations/eq-062.svg),
 
-$$
+![Equation 28](equations/eq-028.svg)
+
+<details>
+<summary>Copy LaTeX source</summary>
+
+```latex
 \mathrm{recovery}=
 \frac{\exp(\delta_L)\{\exp(\delta_D)-1\}}
 {1-\exp(\delta_L)}.
-$$
+```
+
+</details>
 
 The numerator uses the same baseline as the lead loss. A ratio is undefined
 when there is no lead penalty. It is not an arithmetic-revenue recovery ratio.
