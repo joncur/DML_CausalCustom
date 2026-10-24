@@ -71,6 +71,61 @@ def orthogonal_derivatives(pred, partial, residual):
     return residual * (residual * pred - partial), residual ** 2
 
 
+class TweedieMeanRegressor(BaseEstimator):
+    """LightGBM Tweedie outcome nuisance with log link and original-unit means.
+
+    Fits nonnegative Y directly, not log1p(Y). Power in (1,2) targets a
+    compound-Poisson/Gamma mean-variance family with a mass at zero. This is
+    mean regression, not a fitted full predictive distribution or an outlier-
+    resistant estimator. Never use it on signed DR contrasts/residuals.
+    """
+    def __init__(self, *, variance_power=1.5, model_params=None):
+        self.variance_power = variance_power
+        self.model_params = model_params
+
+    def fit(self, X, y):
+        self.is_fitted_ = False
+        if not np.isfinite(self.variance_power) or not 1 < self.variance_power < 2:
+            raise ValueError('variance_power must be strictly between 1 and 2.')
+        x = _numeric(X, 'X')
+        y = _vector(y, 'y').astype(float)
+        if len(y) != x.shape[0] or not np.isfinite(y).all() or (y < 0).any():
+            raise ValueError('Tweedie revenue labels must be finite, nonnegative, original-unit values.')
+        params = dict(n_estimators=120, learning_rate=.05, num_leaves=15,
+                      min_child_samples=100, max_bin=63, reg_lambda=2,
+                      n_jobs=2, random_state=2026, verbosity=-1)
+        params.update(self.model_params or {})
+        for alias in ('objective', 'application', 'objective_type', 'app'):
+            if alias in params and params.pop(alias) != 'tweedie':
+                raise ValueError('TweedieMeanRegressor cannot override its Tweedie objective.')
+        if 'tweedie_variance_power' in params and params.pop('tweedie_variance_power') != self.variance_power:
+            raise ValueError('Specify variance_power once; conflicting Tweedie power settings.')
+        self.n_features_in_ = x.shape[1]
+        self.zero_only_ = bool(np.all(y == 0))
+        self.model_ = None
+        if not self.zero_only_:
+            self.model_ = lgb.LGBMRegressor(objective='tweedie',
+                tweedie_variance_power=self.variance_power, **params).fit(x, y)
+        self.is_fitted_ = True
+        return self
+
+    def predict(self, X):
+        if not getattr(self, 'is_fitted_', False):
+            raise RuntimeError('Tweedie nuisance fit must complete successfully first.')
+        x = _numeric(X, 'X')
+        if x.shape[1] != self.n_features_in_:
+            raise ValueError('Tweedie nuisance X width changed.')
+        p = np.zeros(x.shape[0]) if self.zero_only_ else _pred_vector(self.model_, x)
+        if (p < 0).any():
+            raise ValueError('Tweedie mean prediction must be nonnegative.')
+        return p
+
+    def predict_log_mean(self, X):
+        """Log link linear predictor; log(0)=-inf for the degenerate all-zero fit."""
+        with np.errstate(divide='ignore'):
+            return np.log(self.predict(X))
+
+
 @dataclass(frozen=True)
 class FinalStageConfig:
     """Bounded, stochastic boosting; not LightGBM's rf mode or an honest forest."""
@@ -801,6 +856,7 @@ class LightweightDRLearner(CustomCausalDML):
         b = self._ids(self._endpoints(baseline, self.categories_[0], n))
         c = self._costs(costs, n, k)
         score = np.empty(n)
+        baseline_score = np.empty(n)
         weights_pi, weights_b = np.zeros(n), np.zeros(n)
         t_ids = self._ids(_vector(T, 'T'))
         failures, clipped = 0, 0
@@ -811,9 +867,11 @@ class LightweightDRLearner(CustomCausalDML):
             failures += int(((pa < min_propensity) | (pb < min_propensity)).sum())
             clipped += int(((pa < self.propensity_floor) | (pb < self.propensity_floor)).sum())
             score[sl] = phi[ii, pi[sl]]-phi[ii, b[sl]]-c[sl][ii, pi[sl]]+c[sl][ii, b[sl]]
+            baseline_score[sl] = phi[ii, b[sl]]-c[sl][ii, b[sl]]
             weights_pi[sl] = (t_ids[sl] == pi[sl])/np.maximum(pa, self.propensity_floor)
             weights_b[sl] = (t_ids[sl] == b[sl])/np.maximum(pb, self.propensity_floor)
         mean = float(score.mean())
+        baseline_mean = float(baseline_score.mean())
         if g is None:
             se = float(score.std(ddof=1)/np.sqrt(n)) if n > 1 else None
             count = n
@@ -823,7 +881,12 @@ class LightweightDRLearner(CustomCausalDML):
             se = float(np.sqrt(count/(count-1)*np.sum(centered**2))/n) if count > 1 else None
         quantile = float(student_t.ppf(1-alpha/2, count-1)) if count > 1 else None
         ess = lambda v: float(v.sum()**2/(v@v)) if v@v > 0 else 0.
-        return dict(mean_gain=mean, standard_error=se,
+        return dict(mean_gain=mean, baseline_mean_value=baseline_mean,
+                    policy_mean_value=baseline_mean+mean,
+                    relative_gain_pct=100*mean/baseline_mean if baseline_mean > 0 else None,
+                    relative_gain_note='Ratio of mean values, not a mean of row percentages. '
+                                       'Undefined for nonpositive baseline; the gain CI is not a percentage CI.',
+                    standard_error=se,
                     ci_low=mean-quantile*se if se is not None else None,
                     ci_high=mean+quantile*se if se is not None else None,
                     alpha=alpha, rows=n, independent_units=count,

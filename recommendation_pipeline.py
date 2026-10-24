@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 
-from causal_dml import LightweightDRLearner, FinalStageConfig
+from causal_dml import LightweightDRLearner, FinalStageConfig, TweedieMeanRegressor
 from pipeline import (PipelineConfig, FittedPipeline, prepare_data, _encoder,
                       _clean_features, write_json, _plot)
 
@@ -23,7 +23,10 @@ class RecommendationConfig(PipelineConfig):
     report_cols: list[str] = field(default_factory=lambda: ['data_definition', 'industry'])
     embedding_cols: list[str] = field(default_factory=list)
     product_col: str | None = None
-    log1p_outcome: bool = False  # dollar revenue policy values need original-scale Y
+    log1p_outcome: bool = False  # Tweedie log link takes original-unit revenue labels
+    outcome_nuisance: str = 'tweedie'  # 'regression' retains the earlier L2/log-label option
+    tweedie_variance_power: float = 1.5
+    currency: str = 'EUR'
     propensity_floor: float = .001
     min_policy_propensity: float = .01
     known_propensities: list[float] | None = None
@@ -48,11 +51,15 @@ def _fit_dr(train, cfg, categories, final):
                     min_child_samples=100, max_bin=63, reg_lambda=2,
                     subsample=.8, subsample_freq=1, colsample_bytree=.8,
                     n_jobs=cfg.n_jobs, verbosity=-1, random_state=cfg.random_state)
+    outcome_params = defaults | cfg.nuisance_y_params
+    outcome = (TweedieMeanRegressor(variance_power=cfg.tweedie_variance_power,
+                                   model_params=outcome_params)
+               if cfg.outcome_nuisance == 'tweedie' else LGBMRegressor(**outcome_params))
     model = LightweightDRLearner(categories=categories, cv=cfg.cv,
         final_config=final, propensity_floor=cfg.propensity_floor,
         known_propensities=cfg.known_propensities, n_jobs=cfg.n_jobs,
         random_state=cfg.random_state,
-        model_y=LGBMRegressor(**(defaults | cfg.nuisance_y_params)),
+        model_y=outcome,
         model_t=LGBMClassifier(**(defaults | cfg.nuisance_t_params)))
     model.fit(train['_outcome'].to_numpy(), train['_action'].to_numpy(),
               X=x, W=w, groups=train[cfg.group_col].to_numpy())
@@ -95,10 +102,11 @@ def run_recommendations(df, cfg=None, output_dir='recommendation_outputs', *, sp
     Time separation and outcome-window maturity remain caller-validated.
     """
     cfg = cfg or RecommendationConfig()
+    validate_revenue_config(df, cfg)
     if not cfg.discrete_treatment:
         raise ValueError('Recommendation mode requires categorical interventions. Use CustomCausalDML for scalar dose slopes.')
     if cfg.log1p_outcome and cfg.action_costs:
-        raise ValueError('Dollar costs cannot be subtracted from log outcomes.')
+        raise ValueError('Currency costs cannot be subtracted from log outcomes.')
     if len(cfg.embedding_cols) > 128:
         raise ValueError('Use a fixed product representation of at most 128 numeric dimensions.')
     for col in cfg.embedding_cols:
@@ -178,6 +186,16 @@ def run_recommendations(df, cfg=None, output_dir='recommendation_outputs', *, sp
     evaluation = best.estimator.evaluate_policy(test['_outcome'].to_numpy(), test['_action'].to_numpy(),
         X=x, W=w, policy=rec['action'], baseline=categories[0], groups=test[cfg.group_col].to_numpy(),
         costs=costs, min_propensity=cfg.min_policy_propensity)
+    if not cfg.log1p_outcome:
+        pd.DataFrame([dict(currency=cfg.currency,
+            reference=categories[0], baseline_mean_value=evaluation['baseline_mean_value'],
+            policy_mean_value=evaluation['policy_mean_value'],
+            incremental_value_per_opportunity=evaluation['mean_gain'],
+            percent_change_of_mean=evaluation['relative_gain_pct'],
+            incremental_ci_low=evaluation['ci_low'], incremental_ci_high=evaluation['ci_high'],
+            overlap_pass=evaluation['overlap_pass'],
+            value_definition='Revenue less explicitly configured known action costs')]).to_csv(
+                out/'policy_revenue_summary.csv', index=False)
     result = test[cfg.report_cols+([cfg.product_col] if cfg.product_col else [])].reset_index(drop=True)
     result['recommended_action'] = rec['action']
     result['predicted_net_gain'] = rec['predicted_net_gain']
@@ -216,6 +234,10 @@ def run_recommendations(df, cfg=None, output_dir='recommendation_outputs', *, sp
                                   mean_effect=float(e.mean()) if len(e) else None))
     pd.DataFrame(scenarios).to_csv(out/'scenario_effects.csv', index=False)
     report = dict(method='cross-fitted shared-nuisance DR learner', outcome_scale='log1p' if cfg.log1p_outcome else 'original',
+        outcome_nuisance=cfg.outcome_nuisance,
+        outcome_link='log' if cfg.outcome_nuisance == 'tweedie' else 'as configured',
+        tweedie_variance_power=cfg.tweedie_variance_power if cfg.outcome_nuisance == 'tweedie' else None,
+        currency=cfg.currency if not cfg.log1p_outcome else None,
         selected_config=asdict(final), overlap_training=best.estimator.overlap_, policy_evaluation=evaluation,
         policy_supported_fraction=float(rec['supported'].mean()),
         raw_mean_observed_test_outcome=float(test['_outcome'].mean()),
@@ -228,3 +250,23 @@ def run_recommendations(df, cfg=None, output_dir='recommendation_outputs', *, sp
     write_json(out/'config.json', asdict(cfg))
     joblib.dump(best, out/'fitted_recommendation_pipeline.joblib', compress=3)
     return best, report
+
+
+def validate_revenue_config(df, cfg):
+    """Fail before fitting/splitting rather than silently changing outcome units."""
+    if cfg.outcome_nuisance not in ('tweedie', 'regression'):
+        raise ValueError("outcome_nuisance must be 'tweedie' or 'regression'.")
+    if not isinstance(cfg.currency, str) or len(cfg.currency) != 3 or not cfg.currency.isalpha():
+        raise ValueError('currency must be a three-letter label, e.g. EUR. It does not convert amounts.')
+    if cfg.outcome_nuisance == 'tweedie':
+        if cfg.log1p_outcome:
+            raise ValueError('Tweedie log link requires original-unit Y. Set log1p_outcome=False, or use the regression nuisance for log measurement.')
+        if not np.isfinite(cfg.tweedie_variance_power) or not 1 < cfg.tweedie_variance_power < 2:
+            raise ValueError('tweedie_variance_power must be strictly between 1 and 2.')
+        if cfg.outcome_col not in df:
+            raise ValueError(f'Missing outcome column {cfg.outcome_col}')
+        y = pd.to_numeric(df[cfg.outcome_col], errors='raise').to_numpy(dtype=float)
+        if not np.isfinite(y).all() or (y < 0).any():
+            raise ValueError('Tweedie revenue must be finite and nonnegative. Refunds/net losses require a different outcome model.')
+        if not (y > 0).any():
+            raise ValueError('Revenue is all zero; no revenue recommendation can be identified from these data.')

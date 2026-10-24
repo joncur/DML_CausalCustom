@@ -1,5 +1,27 @@
 # DML_CausalCustom
 
+## Tweedie revenue workflow and notebooks
+
+Start with [notebooks/01_tweedie_revenue_pipeline.ipynb](notebooks/01_tweedie_revenue_pipeline.ipynb).
+It contains commented preparation, fitting and interpretation examples using
+your actual dataframe. All runnable example notebooks now live in
+[notebooks/](notebooks/); the older root notebooks are pointers.
+
+`RecommendationConfig` now defaults to the reusable `TweedieMeanRegressor`
+outcome nuisance with `tweedie_variance_power=1.5` and original-unit revenue.
+LightGBM fits its log-link mean internally; do not apply log1p to this target.
+The final DR stage still uses signed squared-error targets. Set
+`outcome_nuisance='regression'` explicitly to use the earlier L2 nuisance or
+a separate `log1p_outcome=True` measurement run. Tweedie and log1p labels are
+rejected together to prevent silently changing the revenue estimand.
+
+`policy_revenue_summary.csv` contains baseline/policy mean values, incremental
+value per opportunity, and ratio-of-means percentage change. With nonzero
+known costs these are net values; otherwise they are revenue. The gain interval
+is in outcome units and is not a percentage confidence interval. Currency is
+a label, not an automatic conversion. Tweedie targets a mean, not a complete
+predictive distribution, and it does not guarantee resistance to outliers.
+
 ## Equation display and revenue units
 
 Equations are now embedded vector images so they remain readable in Markdown
@@ -23,24 +45,12 @@ The original R-learner and pipeline remain available.
   documented organizational uses, and proposed ecommerce applications.
 - [New mathematics and algorithm](METHODS_V2.md): DR scores, calibration,
   policy values, inference assumptions and memory boundaries.
-- [Recommendation notebook](run_recommendations.ipynb): real-data configuration
+- [Recommendation notebook](notebooks/run_recommendations.ipynb): real-data configuration
   using `data_definition` and `industry`, with optional product attributes.
 - `recommendation_pipeline.py`: separate full workflow with original-scale
   revenue policy evaluation, group splits, costs, support and reports.
 
-```python
-from recommendation_pipeline import RecommendationConfig, run_recommendations
-
-cfg = RecommendationConfig(
-    x_cols=['data_definition', 'industry'],
-    w_cols=['day', 'week', 'month', 'device', 'channel'],
-    discount_input_is_percent=True,
-    # product_col='product_id',           # output key, never a treatment
-    # embedding_cols=['embedding_0', ...], # optional precomputed numeric features
-    calibrate=False,
-)
-fitted, report = run_recommendations(df, cfg)
-```
+Commented code example 1 is in [notebooks/02_api_examples.ipynb](notebooks/02_api_examples.ipynb). For the current revenue setup, start with [the Tweedie notebook](notebooks/01_tweedie_revenue_pipeline.ipynb).
 
 Default split fractions are 50/20/10/20 by unique user for fit, selection,
 reserved calibration and test. The calibration block is reserved even when
@@ -54,7 +64,7 @@ space. Product-level predictions borrow structure from attributes and must
 not be described as independently identified effects for every SKU.
 
 Install `requirements.txt` for either notebook; `pip install -e .` installs the
-standalone module containing both estimators. **34 tests passed** in the
+standalone module containing both estimators. **42 tests passed** in the
 recorded current-environment run. Production accuracy and large-data peak
 memory remain unverified. The original implementation guide follows.
 
@@ -118,7 +128,7 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-Open [`run_pipeline.ipynb`](run_pipeline.ipynb), load your actual `df`, and edit
+Open [`run_pipeline.ipynb`](notebooks/run_pipeline.ipynb), load your actual `df`, and edit
 the configuration. No synthetic application data, BigQuery credentials,
 ADK, or EconML installation is required. Python 3.10+ is required; the recorded
 validation used Python 3.12.
@@ -133,33 +143,7 @@ Alternatively install the reusable module with `python -m pip install -e .`
 from this checkout. That installs `causal_dml` only; the application pipeline
 and notebook remain separate files. Use `requirements.txt` for the full workflow.
 
-```python
-from causal_dml import CustomCausalDML, FinalStageConfig
-from lightgbm import LGBMRegressor, LGBMClassifier
-
-model = CustomCausalDML(
-    discrete_treatment=True,
-    categories=['no_carousel', 'carousel'],  # reference FIRST
-    model_y=LGBMRegressor(n_estimators=120, learning_rate=.05,
-                         num_leaves=15, min_child_samples=100,
-                         max_bin=63, n_jobs=2, verbosity=-1),
-    model_t=LGBMClassifier(n_estimators=120, learning_rate=.05,
-                          num_leaves=15, min_child_samples=100,
-                          max_bin=63, n_jobs=2, verbosity=-1),
-    final_config=FinalStageConfig(
-        n_estimators=160, learning_rate=.05, num_leaves=15,
-        max_depth=5, min_child_samples=200, reg_lambda=5,
-        subsample=.7, colsample_bytree=.8, extra_trees=True,
-    ),
-    cv=3,
-    n_jobs=2,
-)
-model.fit(Y_train, T_train, X=X_train, W=W_train, groups=user_ids_train)
-cate = model.const_marginal_effect(X_test)  # (n,1) for binary treatment
-effect = model.effect(X_test, T0='no_carousel', T1='carousel')  # (n,)
-average = model.ate(X_test, T0='no_carousel', T1='carousel')
-diagnostics = model.residual_diagnostics(Y_test, T_test, X=X_test, W=W_test)
-```
+Commented code example 2 is in [notebooks/02_api_examples.ipynb](notebooks/02_api_examples.ipynb). For the current revenue setup, start with [the Tweedie notebook](notebooks/01_tweedie_revenue_pipeline.ipynb).
 
 `T0` and `T1` are **treatment levels**. `W` holds confounders. For three actions
 `['reference', 'a', 'b']`, `const_marginal_effect(X)` has columns
@@ -193,26 +177,7 @@ additional modeling and are intentionally rejected rather than flattened.
 
 ## Run the separate lead/discount pipeline
 
-```python
-from pipeline import PipelineConfig, run_pipeline
-from causal_dml import FinalStageConfig
-
-cfg = PipelineConfig(
-    outcome_col='revenue', group_col='user_id',
-    x_cols=['industry', 'data_definition', 'region'],
-    w_cols=['day', 'week', 'month', 'device', 'channel'],
-    lead_col='lead_time', discount_col='discount_percentage',
-    discount_input_is_percent=True,  # 7.7 means 7.7%; False if .077 means 7.7%
-    max_discount=.45, max_lead=30,
-    reference='0d|0%',
-    min_action_rows=100, min_cohort_action_rows=100,
-    nuisance_y_params={'n_estimators': 100, 'learning_rate': .05},
-    nuisance_t_params={'n_estimators': 100, 'learning_rate': .05},
-    scenarios=[{'name': 'lab_water', 'filters': {
-        'data_definition': ['lab_water'], 'industry': [], 'region': []}}],
-)
-fitted, report = run_pipeline(df, cfg, output_dir='outputs')
-```
+Commented code example 3 is in [notebooks/02_api_examples.ipynb](notebooks/02_api_examples.ipynb). For the current revenue setup, start with [the Tweedie notebook](notebooks/01_tweedie_revenue_pipeline.ipynb).
 
 The pipeline uses a 60/20/20 split by **unique group**, fits preprocessing on
 training rows, selects between two bounded final-stage configurations using
@@ -230,13 +195,7 @@ cells, appears in `preflight_actions.csv`.
 
 To use an existing carousel treatment instead:
 
-```python
-cfg.treatment_col = 'carousel_seen'
-cfg.categories = [0, 1]
-cfg.reference = 0
-# Only pretreatment variables should appear in X/W for the chosen intervention.
-fitted, report = run_pipeline(df, cfg)
-```
+Commented code example 4 is in [notebooks/02_api_examples.ipynb](notebooks/02_api_examples.ipynb). For the current revenue setup, start with [the Tweedie notebook](notebooks/01_tweedie_revenue_pipeline.ipynb).
 
 | Output | Meaning |
 | --- | --- |

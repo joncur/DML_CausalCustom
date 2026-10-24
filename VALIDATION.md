@@ -1,5 +1,20 @@
 # Validation record
 
+## Tweedie log link extension
+
+The full suite now contains **42 passing tests**. New tests cover original-unit
+mean prediction, the native LightGBM exponential link, cloning/serialization,
+invalid variance powers, nonnegative outcome validation, the zero-only nuisance
+fold, failed refits, accidental log-label configuration, a full Tweedie DR
+pipeline, signed final contrasts, and ratio-of-means percentage reporting.
+The original 34 checks remain. These tests do not establish production
+accuracy, calibration, interval coverage or outlier robustness.
+
+All four notebooks under `notebooks/` were schema-validated and their ordinary
+Python code cells compiled. The current Tweedie notebook was also executed
+against a controlled validation fixture with its installation cell skipped;
+delivered notebooks contain no fabricated data or stored test outputs.
+
 ## Recommendation extension
 
 Current full-suite result: **34 passed in 4.26 seconds**. The 24 original checks

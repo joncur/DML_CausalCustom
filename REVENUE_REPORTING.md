@@ -32,25 +32,14 @@ nuisance**. A log link constrains and models the mean multiplicatively while
 the label and predictions remain revenue in euros. This is different from
 regressing the transformed label `log1p(revenue)`.
 
-```python
-from recommendation_pipeline import RecommendationConfig, run_recommendations
+This is implemented as `TweedieMeanRegressor` and is now the default outcome
+nuisance of `RecommendationConfig`. The commented end-to-end configuration is
+in `notebooks/01_tweedie_revenue_pipeline.ipynb`. Use the explicit
+`tweedie_variance_power` configuration field; conflicting legacy nuisance-dict
+power settings are rejected. The model does not fit a dispersion parameter or
+a full predictive Tweedie distribution.
 
-cfg = RecommendationConfig(
-    outcome_col='revenue',
-    log1p_outcome=False,  # the euro-view estimand; your log measurement model is separate
-    x_cols=['data_definition', 'industry'],
-    nuisance_y_params={
-        'objective': 'tweedie',
-        'tweedie_variance_power': 1.5,
-        'n_estimators': 120,
-        'learning_rate': 0.05,
-        'num_leaves': 15,
-        'min_child_samples': 200,
-        'max_bin': 63,
-    },
-)
-fitted, report = run_recommendations(df, cfg)
-```
+Commented code example 5 is in [notebooks/02_api_examples.ipynb](notebooks/02_api_examples.ipynb). For the current revenue setup, start with [the Tweedie notebook](notebooks/01_tweedie_revenue_pipeline.ipynb).
 
 Tune the variance power using training/selection data, for example 1.2, 1.5,
 and 1.8; no value is universally best. For powers strictly between one and
