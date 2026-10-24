@@ -1,0 +1,9 @@
+{
+  "rows": 50000,
+  "features": 7,
+  "arms": 2,
+  "seconds": 1.611923501000092,
+  "peak_rss_mib": 146.9140625,
+  "retained_tree_model_bytes": 66486,
+  "note": "Controlled full DR fit with known randomized propensities. Not production data or a comparative accuracy benchmark."
+}

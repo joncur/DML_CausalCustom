@@ -1,5 +1,28 @@
 # Validation record
 
+## Recommendation extension
+
+Current full-suite result: **34 passed in 4.26 seconds**. The 24 original checks
+remain. Ten added checks cover categorical DR recovery, both double-robustness
+branches on controlled fixtures, known experimental probabilities, multiarm
+contrasts, W effect modification averaged over X, serialization, independent
+policy value and clustered intervals, costs/support/fallbacks, calibration
+separation, failed refits, product-key separation and the four-split pipeline.
+This is implementation validation, not a statistical coverage study. The
+interval tests check calculation/behavior, not nominal coverage. See
+METHODS_V2.md for propensity-clipping and inference assumptions. The existing
+benchmark below concerns the original bounded final-stage regressor; it is not
+a full benchmark of the new DR workflow.
+
+A separate full DR fit check (`python benchmark_dr.py --rows 50000`) used seven
+numeric features, two randomized arms with known propensities, three folds,
+and 80 final trees capped at seven leaves. Recorded one-run results were
+1.612 seconds, 146.9 MiB process peak RSS, and 66,486 bytes of final-tree text
+serialization. The peak includes imports and data generation. Learned
+propensities, many action arms, sparse/dense product features, preprocessing,
+selection and calibration can materially change the footprint. This check is
+not a full recommendation-pipeline or million-row production benchmark.
+
 Date: October 24, 2026. All fixtures are controlled implementation tests,
 separate from the real-data application notebook. No user production data was
 available for statistical validation.

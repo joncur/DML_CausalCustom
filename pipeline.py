@@ -25,6 +25,7 @@ class PipelineConfig:
     group_col: str = 'user_id'
     x_cols: list[str] = field(default_factory=lambda: ['industry', 'data_definition', 'region'])
     w_cols: list[str] = field(default_factory=lambda: ['day', 'week', 'month', 'device', 'channel'])
+    passthrough_cols: list[str] = field(default_factory=list)
     # Set treatment_col to use an existing categorical/binary/scalar treatment.
     # None builds a joint lead|discount categorical action.
     treatment_col: str | None = None
@@ -70,6 +71,7 @@ def write_json(path, value):
 def prepare_data(df, cfg):
     """Returns eligible copy + explicit filtering audit; never clamps a treatment."""
     required = [cfg.outcome_col, cfg.group_col] + cfg.x_cols + cfg.w_cols
+    required += cfg.passthrough_cols
     required += [cfg.treatment_col] if cfg.treatment_col else [cfg.discount_col, cfg.lead_col]
     missing = sorted(set(required) - set(df.columns))
     if missing:

@@ -1,5 +1,51 @@
 # DML_CausalCustom
 
+## Research informed recommendation extension
+
+The current version adds `LightweightDRLearner` in the same standalone module,
+with a shared outcome nuisance, independent policy evaluation, optional causal
+isotonic calibration, explicit overlap diagnostics and bounded final trees.
+The original R-learner and pipeline remain available.
+
+- [Research review and 24 references](RESEARCH_REVIEW.md): current methods,
+  documented organizational uses, and proposed ecommerce applications.
+- [New mathematics and algorithm](METHODS_V2.md): DR scores, calibration,
+  policy values, inference assumptions and memory boundaries.
+- [Recommendation notebook](run_recommendations.ipynb): real-data configuration
+  using `data_definition` and `industry`, with optional product attributes.
+- `recommendation_pipeline.py`: separate full workflow with original-scale
+  revenue policy evaluation, group splits, costs, support and reports.
+
+```python
+from recommendation_pipeline import RecommendationConfig, run_recommendations
+
+cfg = RecommendationConfig(
+    x_cols=['data_definition', 'industry'],
+    w_cols=['day', 'week', 'month', 'device', 'channel'],
+    discount_input_is_percent=True,
+    # product_col='product_id',           # output key, never a treatment
+    # embedding_cols=['embedding_0', ...], # optional precomputed numeric features
+    calibrate=False,
+)
+fitted, report = run_recommendations(df, cfg)
+```
+
+Default split fractions are 50/20/10/20 by unique user for fit, selection,
+reserved calibration and test. The calibration block is reserved even when
+calibration is off. `known_propensities` accepts constant randomized assignment
+probabilities in explicit category order, with no action-vocabulary filtering.
+`split_indices` can provide four externally purged group-disjoint subsets of
+the eligible frame; temporal maturity/purging is not inferred automatically.
+The policy comparison is against the configured reference, not the historical
+stochastic policy. A large number of products does not require a large action
+space. Product-level predictions borrow structure from attributes and must
+not be described as independently identified effects for every SKU.
+
+Install `requirements.txt` for either notebook; `pip install -e .` installs the
+standalone module containing both estimators. **34 tests passed** in the
+recorded current-environment run. Production accuracy and large-data peak
+memory remain unverified. The original implementation guide follows.
+
 A reusable, memory-conscious causal R-learner with LightGBM nuisance models
 and a **custom LightGBM final-stage objective**. The estimator is one independent
 module: [`causal_dml.py`](causal_dml.py). The lead/discount workflow is separate:
@@ -110,7 +156,9 @@ All pandas inputs supplied to `fit` must have matching indices. DataFrame
 feature names and order are checked at prediction when DataFrames are used.
 Array inputs are positional. Predictions are disabled after a failed refit.
 `joblib.dump/load` works for trusted model files; do not load untrusted pickle files.
-There is no `sample_weight` or inference API in this version.
+There is no `sample_weight` API. The original R-learner has no inference API;
+the new DR learner provides a separate fixed-policy value interval under the
+assumptions in METHODS_V2.md, not pointwise CATE intervals.
 
 Continuous mode uses `discrete_treatment=False` and assumes a response linear
 in dose conditional on X: effect = slope(X) × (T1−T0). Nonlinear dose response,
