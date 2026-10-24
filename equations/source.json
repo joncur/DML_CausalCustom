@@ -1,0 +1,428 @@
+[
+  {
+    "file": "eq-001.svg",
+    "latex": "\\widetilde Y_i=Y_i-\\widehat m^{(-k(i))}(X_i,W_i),\\qquad\nR_i=\\phi(T_i)-\\widehat e^{(-k(i))}(X_i,W_i).",
+    "display": true,
+    "document": "README.md"
+  },
+  {
+    "file": "eq-002.svg",
+    "latex": "\\frac{1}{2n}\\sum_{i=1}^{n}\n\\left(\\widetilde Y_i-R_i^\\top\\theta(X_i)\\right)^2.",
+    "display": true,
+    "document": "README.md"
+  },
+  {
+    "file": "eq-003.svg",
+    "latex": "\\phi_j(T)=\\mathbf{1}\\{T=a_j\\},\\quad j=1,\\ldots,q.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-004.svg",
+    "latex": "E[Y\\mid Z,T]=g(Z)+\\phi(T)^\\top\\theta(X).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-005.svg",
+    "latex": "m(Z)=E[Y\\mid Z],\\qquad e(Z)=E[\\phi(T)\\mid Z].",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-006.svg",
+    "latex": "\\widetilde Y_i=Y_i-\\widehat m^{(-k(i))}(Z_i),\\qquad\nR_i=\\phi(T_i)-\\widehat e^{(-k(i))}(Z_i).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-007.svg",
+    "latex": "\\widetilde Y=R^\\top\\theta_0(X)+\\varepsilon,\n\\qquad E[\\varepsilon\\mid Z,T]=0.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-008.svg",
+    "latex": "L(\\theta)=\\frac{1}{2n}\\sum_i\n\\left(\\widetilde Y_i-R_i^\\top\\theta(X_i)\\right)^2.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-009.svg",
+    "latex": "E\\left[R\\{\\widetilde Y-R^\\top\\theta(X)\\}\\mid X\\right]=0.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-010.svg",
+    "latex": "G(x)=E[RR^\\top\\mid X=x].",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-011.svg",
+    "latex": "(\\widetilde Y-r f(X))^2\n=r^2\\left(\\frac{\\widetilde Y}{r}-f(X)\\right)^2,\\qquad r\\ne0.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-012.svg",
+    "latex": "\\operatorname{Cov}(\\phi(T)\\mid Z)\n=\\operatorname{diag}(p)-pp^\\top.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-013.svg",
+    "latex": "\\widehat G=\\frac1n R^\\top R,\\qquad\n\\widehat b=\\frac1n R^\\top\\widetilde Y.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-014.svg",
+    "latex": "\\theta^{(0)}=(\\widehat G+\\lambda_0 I)^{-1}\\widehat b.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-015.svg",
+    "latex": "\\widehat\\theta_j(x)=\\theta^{(0)}_j+f_j(x).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-016.svg",
+    "latex": "u_{ij}=\\widetilde Y_i-s_i+R_{ij}\\widehat\\theta_j(X_i).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-017.svg",
+    "latex": "a_{ij}=u_{ij}-R_{ij}\\theta^{(0)}_j.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-018.svg",
+    "latex": "\\ell_{ij}(f_j)=\\frac12\\left(a_{ij}-R_{ij}f_j(X_i)\\right)^2.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-019.svg",
+    "latex": "g_{ij}=R_{ij}\\left(R_{ij}f_{ij}-a_{ij}\\right),\\qquad\nh_{ij}=R_{ij}^2.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-020.svg",
+    "latex": "s_i^{\\rm new}=s_i+R_{ij}\n\\left(\\widehat\\theta_j^{\\rm new}(X_i)-\\widehat\\theta_j(X_i)\\right).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-021.svg",
+    "latex": "G_A=\\sum_{i\\in A}g_{ij},\\qquad H_A=\\sum_{i\\in A}R_{ij}^2.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-022.svg",
+    "latex": "v_A=-\\frac{\\operatorname{soft}(G_A,\\alpha)}{H_A+\\lambda}.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-023.svg",
+    "latex": "\\widehat L_H=\\frac1{|H|}\\sum_{i\\in H}\n\\left(Y_i-\\widehat m_{\\rm train}(Z_i)\n-\\{\\phi(T_i)-\\widehat e_{\\rm train}(Z_i)\\}^\\top\n\\widehat\\theta(X_i)\\right)^2.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-024.svg",
+    "latex": "\\widehat\\tau(x;a,b)=\\widehat\\theta_b(x)-\\widehat\\theta_a(x),\n\\qquad \\widehat\\theta_{a_0}(x)=0.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-025.svg",
+    "latex": "\\widehat\\tau(x;t_0,t_1)=\\widehat\\theta(x)(t_1-t_0).",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-026.svg",
+    "latex": "\\Delta(x)=E[V(1)\\mid X=x]-E[V(0)\\mid X=x].",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-027.svg",
+    "latex": "\\frac{G_1(x)}{G_0(x)}-1=\\exp(\\Delta(x))-1.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-028.svg",
+    "latex": "\\mathrm{recovery}=\n\\frac{\\exp(\\delta_L)\\{\\exp(\\delta_D)-1\\}}\n{1-\\exp(\\delta_L)}.",
+    "display": true,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-029.svg",
+    "latex": "Y",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-030.svg",
+    "latex": "T",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-031.svg",
+    "latex": "X",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-032.svg",
+    "latex": "W",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-033.svg",
+    "latex": "Z=(X,W)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-034.svg",
+    "latex": "Z",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-035.svg",
+    "latex": "[a_0,a_1,\\ldots,a_{K-1}]",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-036.svg",
+    "latex": "\\theta_j(X)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-037.svg",
+    "latex": "a_j",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-038.svg",
+    "latex": "a_0",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-039.svg",
+    "latex": "\\phi(T)=T",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-040.svg",
+    "latex": "E[R\\mid Z]",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-041.svg",
+    "latex": "E[\\varepsilon\\mid Z]",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-042.svg",
+    "latex": "\\widehat G=n^{-1}\\sum_i R_iR_i^\\top",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-043.svg",
+    "latex": "\\widetilde Y",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-044.svg",
+    "latex": "\\theta(X)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-045.svg",
+    "latex": "[X,R]",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-046.svg",
+    "latex": "-p_jp_k",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-047.svg",
+    "latex": "\\lambda_0",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-048.svg",
+    "latex": "f_j=0",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-049.svg",
+    "latex": "s_i=\\sum_k R_{ik}\\widehat\\theta_k(X_i)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-050.svg",
+    "latex": "f_j",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-051.svg",
+    "latex": "f_{ij}",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-052.svg",
+    "latex": "R_iR_i^\\top",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-053.svg",
+    "latex": "R_{ij}^2",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-054.svg",
+    "latex": "G_A v + \\tfrac12(H_A+\\lambda)v^2+\\alpha|v|",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-055.svg",
+    "latex": "\\eta v_A",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-056.svg",
+    "latex": "1-L_H/L_{H,\\mathrm{constant}}",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-057.svg",
+    "latex": "V=\\log(1+Y)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-058.svg",
+    "latex": "G_t(x)=\\exp(E[V(t)\\mid X=x])",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-059.svg",
+    "latex": "E[Y(t)\\mid X]\\ne\\exp(E[V(t)\\mid X])-1",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-060.svg",
+    "latex": "\\delta_L=\\tau(\\mathrm{lead},0\\%)-\\tau(0\\mathrm{d},0\\%)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-061.svg",
+    "latex": "\\delta_D=\\tau(\\mathrm{lead},d)-\\tau(\\mathrm{lead},0\\%)",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-062.svg",
+    "latex": "\\delta_L<0",
+    "display": false,
+    "document": "MATH.md"
+  },
+  {
+    "file": "eq-063.svg",
+    "latex": "\\mu_a(Z)=E[Y\\mid T=a,Z],\\qquad p_a(Z)=P(T=a\\mid Z),\\quad Z=(X,W).",
+    "display": true,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-064.svg",
+    "latex": "\\Gamma_{ia}=\\widehat\\mu_a^{(-k(i))}(Z_i)\n+\\frac{\\mathbf1\\{T_i=a\\}}{\\widehat p_a^{(-k(i))}(Z_i)}\n\\left[Y_i-\\widehat\\mu_a^{(-k(i))}(Z_i)\\right].",
+    "display": true,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-065.svg",
+    "latex": "\\widehat\\tau_a=\\arg\\min_{f\\in\\mathcal F}\n\\sum_i(D_{ia}-f(X_i))^2+\\mathrm{tree\\ regularization}.",
+    "display": true,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-066.svg",
+    "latex": "\\widehat\\Delta_V=\\frac1n\\sum_i\\left[\n\\Gamma_{i,\\pi(Z_i)}-\\Gamma_{i,b(Z_i)}\n-c_{i,\\pi(Z_i)}+c_{i,b(Z_i)}\\right].",
+    "display": true,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-067.svg",
+    "latex": "\\widehat{\\mathrm{SE}}=\n\\frac1n\\sqrt{\\frac{G}{G-1}\\sum_{g=1}^{G}\n\\left(\\sum_{i\\in g}d_i\\right)^2}.",
+    "display": true,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-068.svg",
+    "latex": "D_{ia}=\\Gamma_{ia}-\\Gamma_{i0}",
+    "display": false,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-069.svg",
+    "latex": "E[Y(a)-Y(0)\\mid X]",
+    "display": false,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-070.svg",
+    "latex": "\\mathrm{ESS}=(\\sum_i w_i)^2/\\sum_i w_i^2",
+    "display": false,
+    "document": "METHODS_V2.md"
+  },
+  {
+    "file": "eq-071.svg",
+    "latex": "d_i=\\psi_i-\\bar\\psi",
+    "display": false,
+    "document": "METHODS_V2.md"
+  }
+]
